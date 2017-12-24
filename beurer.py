@@ -1,4 +1,4 @@
-import sys, serial, time
+import sys, serial, time, struct
 
 class Measurement(object):
     def __init__(self, data):
@@ -75,11 +75,17 @@ class BeurerBM65(object):
         description = self.bytesToString(self.sendBytes(ser, [0xA4], 32))
         print "Requested device description. Got '{0}'".format(description)
         
-        measurementCount = self.sendBytes(ser, [0xA2])[0]
+        measurementCount = self.sendBytes(ser, [0xA2], responseLength=2)
+        # we know two bytes are received/sent compared to the original
+        # Beurer protocol, the format is a theory for now until I have
+        # observed more than 255 measurements
+        measurementCount = (measurementCount[0] << 8) + measurementCount[1]
+        print(str(measurementCount))
         print "Found {0} measurement(s)...".format(measurementCount)
         
         for idx in range(measurementCount):
-            yield Measurement(self.sendBytes(ser, [0xA3, idx + 1], 9))
+            idx_packed = [ord(m) for m in struct.pack('>h', idx + 1)]
+            yield Measurement(self.sendBytes(ser, [0xA3, idx_packed[0], idx_packed[1]], 9))
         
         print "Done. Closing connection..."     
         ser.close()

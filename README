@@ -1,3 +1,6 @@
 Python code for downloading data from a Beurer BM65 blood pressure monitor.
 
 For more details, see my blog post at http://www.atbrask.dk/?p=98
+
+[Adapted for being used with a MediaSana® CardioCompact device
+(uses two byte fields for record count) by @alech, 2017]
